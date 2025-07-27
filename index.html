@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌞❄Weather</title>
+</head>
+<body>
+<center>
+    <div class="input">
+        <h1>Real-time weather forecast</h1>
+        <input type="text" id="cityInput" placeholder="Check your local weather"> <br>
+        <button onclick="getWeather()">Search</button>
+        
+        <div id="weatherResult" class="weather-display">
+            <div id="loading" class="loading">🔍 Searching...</div>
+            <div id="weatherData" class="weather-data">
+                <h2 id="cityName"></h2>
+                <div class="temperature">
+                    <span id="temp"></span>
+                    <span id="weatherIcon"></span>
+                </div>
+                <p id="description"></p>
+                <div class="weather-details">
+                    <div class="detail-item">
+                        <span>Feels like:</span>
+                        <span id="feelsLike"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Humidity:</span>
+                        <span id="humidity"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Wind Speed:</span>
+                        <span id="windSpeed"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="error" class="error"></div>
+        </div>
+    </div>
+</center>
+
+<script>
+const API_KEY = 'f29c13cafad6ba968b801c84d0455469'; 
+const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
+
+async function getWeather() {
+    const cityInput = document.getElementById('cityInput');
+    const city = cityInput.value.trim();
+    
+    if (!city) {
+        showError('Please enter a city name');
+        return;
+    }
+    
+
+    showLoading();
+    
+    try {
+        const response = await fetch(`${API_URL}?q=${city}&appid=${API_KEY}&units=metric`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayWeather(data);
+        } else {
+            showError(data.message || 'City not found');
+        }
+    } catch (error) {
+        showError('Unable to fetch weather data. Please check your internet connection.');
+    }
+}
+
+function displayWeather(data) {
+    const weatherResult = document.getElementById('weatherResult');
+    const weatherData = document.getElementById('weatherData');
+    
+    
+    document.getElementById('cityName').textContent = `${data.name}, ${data.sys.country}`;
+    document.getElementById('temp').textContent = `${Math.round(data.main.temp)}°C`;
+    document.getElementById('weatherIcon').textContent = getWeatherEmoji(data.weather[0].main);
+    document.getElementById('description').textContent = data.weather[0].description.charAt(0).toUpperCase() + data.weather[0].description.slice(1);
+    document.getElementById('feelsLike').textContent = `${Math.round(data.main.feels_like)}°C`;
+    document.getElementById('humidity').textContent = `${data.main.humidity}%`;
+    document.getElementById('windSpeed').textContent = `${data.wind.speed} m/s`;
+    
+    hideLoading();
+    hideError();
+    weatherData.style.display = 'block';
+    weatherResult.style.display = 'block';
+}
+
+function showLoading() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('weatherData').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+    document.getElementById('weatherResult').style.display = 'block';
+}
+
+
+function hideLoading() {
+    document.getElementById('loading').style.display = 'none';
+}
+
+
+function showError(message) {
+    const errorDiv = document.getElementById('error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    document.getElementById('weatherData').style.display = 'none';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('weatherResult').style.display = 'block';
+}
+
+function hideError() {
+    document.getElementById('error').style.display = 'none';
+}
+
+
+function getWeatherEmoji(weatherMain) {
+    const weatherEmojis = {
+        'Clear': '☀️',
+        'Clouds': '☁️',
+        'Rain': '🌧️',
+        'Drizzle': '🌦️',
+        'Thunderstorm': '⛈️',
+        'Snow': '❄️',
+        'Mist': '🌫️',
+        'Fog': '🌫️',
+        'Haze': '🌫️'
+    };
+    return weatherEmojis[weatherMain] || '🌤️';
+}
+
+document.getElementById('cityInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        getWeather();
+    }
+});
+
+
+document.getElementById('weatherResult').style.display = 'none';
+</script>
+</body>
+<style>
+    * {
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        background-color: #f1f1f1;
+    }
+
+    h1 {
+        position: relative;
+        top: 100px;
+        margin-top: 50px;
+        color: white;
+        background-color: transparent;
+    }
+
+    .input {
+        margin-top: 50px;
+        height: auto;
+        min-height: 600px;
+        width: 600px;
+        border-radius: 20px;
+        background-color: #1a2a57;
+        box-shadow: 0px 1px 10px green;
+        padding-bottom: 30px;
+        filter: blur();
+    }
+
+    input {
+        margin-top: 100px;
+        border-radius: 30px;
+        height: 50px;
+        width: 500px;
+        background-color: white;
+        color: black;
+        font-size: 20px;
+        border: none;
+        padding: 0 20px;
+        outline: none;
+    }
+
+    input::placeholder {
+        font-size: 20px
+    }
+
+    button {
+        color: black;
+        margin-top: 30px;
+        border-radius: 30px;
+        height: 50px;
+        width: 170px;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background-color: blue;
+        color: white;
+        transition: ease-in-out 0.5s;
+        cursor: pointer;
+        animation: button-height 1s ease-in-out both;
+    }
+    @keyframes button-height {
+        0% {height: 50px;}
+        100%{height: 60px;}        
+    }
+
+    
+    .weather-display {
+        margin-top: 40px;
+        border-radius: 15px;
+    }
+
+    .loading {
+        color: white;
+        font-size: 18px;
+        padding: 20px;
+    }
+
+    .weather-data {
+        color: white;
+        background: #1a2a57;
+        text-align: center;
+    }
+
+    .weather-data h2 {
+        background-color: transparent;
+        margin: 10px 0;
+        font-size: 24px;
+        color: white;
+    }
+
+    .temperature {
+        background-color: transparent;
+        font-size: 48px;
+        margin: 20px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .temperature span {
+        background-color: transparent;
+        color: white;
+    }
+
+    .weather-data p {
+        background-color: transparent;
+        font-size: 18px;
+        margin: 15px 0;
+        text-transform: capitalize;
+        color: white;
+    }
+
+    .weather-details {
+        background-color: transparent;
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .detail-item {
+        background-color: transparent;
+        margin: 5px;
+        text-align: center;
+        color: white;
+    }
+
+    .detail-item span {
+        background-color: transparent;
+        display: block;
+        color: white;
+    }
+
+    .detail-item span:first-child {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 5px;
+    }
+
+    .detail-item span:last-child {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .error {
+        font-size: 30px;
+        padding: 20px;
+        background-color: #1a2a57;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+
+    
+    @media (max-width: 650px) {
+        .input {
+            width: 90%;
+            margin: 20px auto;
+        }
+        
+        input {
+            width: 80%;
+        }
+        
+        .weather-details {
+            flex-direction: column;
+        }
+    }
+</style>
+</html>
